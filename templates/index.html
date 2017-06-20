@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div id="alert-holder" style="margin-top:30px;"></div>
+
+  <div class="row" style="margin-top:30px;">
+      <div class="col-md-10">
+          <button class="btn btn-large btn-default script" data-script="update_csv"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>&nbsp;&nbsp;Update Once</button>
+      </div>
+      <div class="col-md-2">
+          <div class="input-group">
+            <input id="value-timeout" type="text" class="form-control" value="{{ timeout }}">
+            <span class="input-group-btn">
+              <button class="btn btn-default" type="button" id="set-timeout">
+                  <span class="glyphicon glyphicon-time" aria-hidden="true"></span>&nbsp;Set
+              </button>
+            </span>
+          </div><!-- /input-group -->
+      </div>
+  </div>
+
+  <hr>
+
+  <div class="row" style="margin-top:15px;">
+    <div class="col-md-12"><h4 style="color: #777; font-weight: normal;">Type a racedate</h4></div>
+    <div class="col-md-12">
+      <h1 id="racedate"><span style="font-size:60px;" class="text" contenteditable>{% if racedate %}{{ racedate }}{% else %}2017-06-20{% endif %}</span></h1>
+    </div>
+  </div>
+
+{% endblock %}
+
+{% block extrajs %}
+<script type="text/javascript">
+    $(function(){
+        var pop_alert = function(headline, success){
+            /*
+                Message should have a key "output" that is a string.
+            */
+            var message_text = "Failed; please check the logs.";
+            if (success == "0") { message_text = "Success." };
+            var alert_text = '<div class="alert alert-danger" role="alert"><strong>'+ headline + '</strong>: ' + message_text + ' <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>';
+
+            $('#alert-holder').html(alert_text);
+
+            if (success == "0") {
+                $('#alert-holder .alert').removeClass('alert-danger').addClass('alert-success')
+            }
+        }
+        var run_server_script = function(data){
+            /*
+                Hit the route for running one of these three server scripts.
+            */
+            var script_type = $(this).attr('data-script');
+            var racedate = $('#racedate span.text').text();
+            $.ajax({
+                type: "GET",
+                url: '/elections/2017/nobake/' + racedate + '/script/' + script_type + '/',
+                success: function(response){
+                    pop_alert(script_type, response.output);
+                },
+                dataType: 'JSON'
+            });
+        }
+        var set_loader_timeout = function(data){
+            var timeout = $('#value-timeout').val();
+            var data = {};
+
+            data['timeout'] = timeout;
+
+            $.ajax({
+                type: 'POST',
+                data: data,
+                url: '/elections/2017/nobake/loader/timeout/',
+                success: function(response){
+                    pop_alert("Set timeout", response.output);
+                },
+                dataType: 'JSON'
+            })
+        }
+        $('button.script').on('click', run_server_script);
+        $('#set-timeout').on('click', set_loader_timeout);
+    });
+</script>
+{% endblock %}

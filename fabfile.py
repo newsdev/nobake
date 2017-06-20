@@ -21,7 +21,7 @@ ENVIRONMENTS = {
     }
 }
 
-env.project_name = 'elex-admin'
+env.project_name = 'nobake'
 env.user = "ubuntu"
 env.forward_agent = True
 env.branch = "master"

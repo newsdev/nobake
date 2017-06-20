@@ -26,14 +26,9 @@ env.user = "ubuntu"
 env.forward_agent = True
 env.branch = "master"
 
-env.racedate = os.environ.get('RACEDATE', None)
 env.hosts = ['127.0.0.1']
 env.dbs = ['127.0.0.1']
 env.settings = None
-
-@api.task
-def r(racedate):
-    env.racedate = racedate
 
 @api.task
 def development():
@@ -75,15 +70,9 @@ def pip_install():
 
 @api.task
 def bounce():
-    api.run('sudo service elex-nobake stop')
+    api.run('sudo service %(project_name)s stop' % env)
     time.sleep(1)
-    api.run('sudo service elex-nobake start')
-
-@api.task
-def candidates(racedate):
-    if racedate:
-        env.racedate = racedate
-    api.run('cd /home/ubuntu/%(project_name)s; workon %(project_name)s && export RACEDATE=%(racedate)s && python elex_admin/initialize_racedate.py' % env)
+    api.run('sudo service %(project_name)s start' % env)
 
 @api.task
 def deploy():
